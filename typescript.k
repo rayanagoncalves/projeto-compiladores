@@ -14,7 +14,7 @@ module TYPESCRIPT-SYNTAX
                 | "if" "(" BExp ")" "{" Block "}" [strict(1)]
                 | "if" "(" BExp ")" "{" Block "}" ElseIfStmt [strict(1)]
                 | BExp "?" Block ":" Block [strict(1)]
-                | "while" "(" BExp ")" "{" Block "}" [strict(1)]
+                | "while" "(" BExp ")" "{" Block "}"
                 | "do" "{" Block "}" "while" "(" BExp ")" 
                 | "for" "(" DecVar "=" AExp ";" BExp ";" AExpMod ")" "{" Block "}"
 
@@ -35,10 +35,14 @@ module TYPESCRIPT-SYNTAX
     syntax BExp ::= Bool
                 | AExp ">" AExp [strict]
                 | AExp "<" AExp [strict]
-                | AExp ">=" AExp [strict] // Erro
-                | AExp "<=" AExp [strict] // Erro
+                | AExp ">=" AExp [strict]
+                | AExp "<=" AExp [strict]
+                | AExp "==" AExp [strict]
                 | Id ">" BExp [strict]
                 | Id "<" BExp [strict]
+                | Id ">=" BExp [strict]
+                | Id "<=" BExp [strict]
+                | Id "==" BExp [strict]
                 | Id
 
     syntax AExpMod ::= Id "++"
@@ -72,6 +76,9 @@ module TYPESCRIPT-SYNTAX
 
     rule I1:Int < I2:Int => I1 <Int I2
     rule I1:Int > I2:Int => I1 >Int I2
+    rule I1:Int <= I2:Int => I1 <=Int I2
+    rule I1:Int >= I2:Int => I1 >=Int I2
+    rule I1:Int == I2:Int => I1 ==Int I2
     
     rule if (true) { S:Stmt } => S
     rule if (false) { _ } => Skip
