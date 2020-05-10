@@ -1,9 +1,8 @@
 module TYPESCRIPT-SYNTAX 
     import DOMAINS
 
-    syntax Block ::= Stmt
+    syntax Block ::= Stmt                 
 
-    // FOR, WHILE NAO FUNCIONAL
     syntax Stmt ::= AExp
                 | Stmt Stmt [left]
                 | DecVar
@@ -17,6 +16,8 @@ module TYPESCRIPT-SYNTAX
                 | "while" "(" BExp ")" "{" Block "}"
                 | "do" "{" Block "}" "while" "(" BExp ")" 
                 | "for" "(" DecVar "=" AExp ";" BExp ";" AExpMod ")" "{" Block "}"
+                | Skip
+//                | ArrayList
 
     syntax AExp ::= Int 
                 > left: AExp "/" AExp [seqstrict, left]
@@ -31,25 +32,23 @@ module TYPESCRIPT-SYNTAX
 
     rule S1:String + S2:String => S1 +String S2
 
-    // Faltando AND, OR e NOT
     syntax BExp ::= Bool
                 | AExp ">" AExp [strict]
                 | AExp "<" AExp [strict]
                 | AExp ">=" AExp [strict]
                 | AExp "<=" AExp [strict]
                 | AExp "==" AExp [strict]
-                | Id ">" BExp [strict]
-                | Id "<" BExp [strict]
-                | Id ">=" BExp [strict]
-                | Id "<=" BExp [strict]
-                | Id "==" BExp [strict]
                 | Id
+                | BExp "||" BExp [seqstrict]
+                | BExp "&&" BExp [seqstrict]
+                | "!" BExp [seqstrict, left]
 
     syntax AExpMod ::= Id "++"
                     | Id "--"
 
     syntax DecVar ::= Id ":" Type
                     | "var" Id
+               //     | Ids ":" Type
 
     syntax Type ::= "number" 
                   | "boolean" 
@@ -66,6 +65,11 @@ module TYPESCRIPT-SYNTAX
                         | "else" "{" Block "}"
                         | "else if" "(" BExp ")" "{" Block "}" ElseIfStmt
 
+//    syntax ListValues ::= List{Int, ","}
+
+//    syntax Ids ::= List{Id, ","}
+
+//    syntax ArrayList ::= "[" ListValues "]"
 
     syntax Skip ::= "Skip"
 
@@ -79,6 +83,17 @@ module TYPESCRIPT-SYNTAX
     rule I1:Int <= I2:Int => I1 <=Int I2
     rule I1:Int >= I2:Int => I1 >=Int I2
     rule I1:Int == I2:Int => I1 ==Int I2
+
+    rule true || false => true 
+    rule true || true => true 
+    rule false || false => false 
+    rule false || true => true 
+    rule true && false => false 
+    rule true && true => true 
+    rule false && false => false 
+    rule false && true => false 
+    rule ! true => false
+    rule ! false => true
     
     rule if (true) { S:Stmt } => S
     rule if (false) { _ } => Skip
@@ -97,6 +112,9 @@ module TYPESCRIPT-SYNTAX
 
     rule for (D:DecVar = V:AExp ; B:BExp ; Amod:AExpMod ) {S} 
         => D = V ~> while (B) { S Amod } [structural]
+
+  //  rule .Ids : T:Type => Skip  
+   // rule .Ids : T:Type = _:Int => Skip 
 
     rule S1:Stmt S2:Stmt => S1 ~> S2
     
@@ -177,6 +195,18 @@ module TYPESCRIPT-SYNTAX
     rule <k> I:Id = V:String => Skip ... </k>
         <env> ... I |-> L ... </env>
         <store> ... L |-> (_ => V) ... </store>
+
+    // Regra ArrayList 
+
+ /*   rule <k>(I:Id , Xs:Ids) : T:Type = V:Int => Xs:T = V ... </k>
+        <env> MEnv:Map => MEnv I |-> L </env>
+        <store> MStore:Map => MStore L |-> V</store>
+        <loc> L:Int => L +Int 1</loc>
+
+    rule <k>(I:Id , Xs:Ids) : T:Type => Xs:T ... </k>
+        <env> MEnv:Map => MEnv I |-> L </env>
+        <store> MStore:Map => MStore L |-> 0</store>
+        <loc> L:Int => L +Int 1</loc>  */
 
     rule Skip => .
 
