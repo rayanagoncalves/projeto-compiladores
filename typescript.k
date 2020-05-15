@@ -17,20 +17,20 @@ module TYPESCRIPT-SYNTAX
                 | "do" "{" Block "}" "while" "(" BExp ")" 
                 | "for" "(" DecVar "=" AExp ";" BExp ";" AExpMod ")" "{" Block "}"
                 | Skip
-//                | ArrayList
+              //| ArrayList
 
     syntax AExp ::= Int 
                 > left: AExp "/" AExp [seqstrict, left]
                 > left: AExp "*" AExp [seqstrict, left]
-                | AExp "+" AExp [seqstrict, left]
+                | Int "+" AExp [seqstrict, left]
                 | AExp "-" AExp [seqstrict, left]
                 | Id
 
     syntax SExp ::= String
-                | SExp "+" SExp [seqstrict, left]
+                | String "+" SExp [seqstrict, left]
                 | Id
 
-    rule S1:String + S2:String => S1 +String S2
+    syntax ConcatOrSum ::= Id "+" Id 
 
     syntax BExp ::= Bool
                 | AExp ">" AExp [strict]
@@ -54,12 +54,15 @@ module TYPESCRIPT-SYNTAX
                   | "boolean" 
                   | "String"
                 
-    syntax Assigner ::= Id "=" AExp [strict(2)]
+    syntax Assigner ::= DecVar "=" ConcatOrSum 
+                        | Id "=" AExp [strict(2)]
                         | DecVar "=" AExp [strict(2)]
                         | Id "=" BExp [strict(2)]
                         | DecVar "=" BExp [strict(2)]
                         | Id "=" SExp [strict(2)]
                         | DecVar "=" SExp [strict(2)]
+
+   // syntax Teste ::= AExp | BExp | SExp
 
     syntax ElseIfStmt ::= "else if" "(" BExp ")" "{" Block "}"
                         | "else" "{" Block "}"
@@ -117,13 +120,15 @@ module TYPESCRIPT-SYNTAX
    // rule .Ids : T:Type = _:Int => Skip 
 
     rule S1:Stmt S2:Stmt => S1 ~> S2
+
+    rule S1:String + S2:String => S1 +String S2
     
     rule <k> I:Id : number => Skip ... </k>
         <env> MEnv:Map => MEnv I |-> L </env>
         <store> MStore:Map => MStore L |-> 0 </store>
         <loc> L:Int => L +Int 1 </loc>
 
-    rule <k> I:Id = V:Int => Skip ... </k>
+    rule <k> I:Id = V:AExp => Skip ... </k>
         <env> ... I |-> L ... </env>
         <store> ... L |-> (_ => V) ... </store>
 
@@ -131,7 +136,7 @@ module TYPESCRIPT-SYNTAX
         <env> ... I |-> L ... </env>
         <store> ... L |-> V ... </store>
 
-    rule <k>I:Id : number = V:Int => Skip ...</k>
+    rule <k>I:Id : number = V:AExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
         <store> MStore:Map => MStore L |-> V</store> 
         <loc> L:Int => L +Int 1</loc> 
@@ -149,19 +154,24 @@ module TYPESCRIPT-SYNTAX
         <store> MStore:Map => MStore L |-> 0 </store>
         <loc> L:Int => L +Int 1 </loc>
 
+    // REGRA QUE DÁ PROBLEMA
+  /*   rule <k> I1:Id = I2:Id => I1 = V ... </k>
+        <env> ... I2 |-> L ... </env>
+        <store> ... L |-> V  ... </store> */
+
     // REGRA VAR PARA INT
-    rule <k> var I:Id = V:Int => Skip ...</k>
+    rule <k> var I:Id = V:AExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
         <store> MStore:Map => MStore L |-> V</store> 
         <loc> L:Int => L +Int 1</loc> 
 
     // REGRA VAR PARA BOOL
-    rule <k> var I:Id = V:Bool => Skip ...</k>
+    rule <k> var I:Id = V:BExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
         <store> MStore:Map => MStore L |-> V</store> 
         <loc> L:Int => L +Int 1</loc>   
 
-    rule <k>I:Id : boolean = V:Bool => Skip ...</k>
+    rule <k>I:Id : boolean = V:BExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
         <store> MStore:Map => MStore L |-> V</store> 
         <loc> L:Int => L +Int 1</loc> 
@@ -171,7 +181,7 @@ module TYPESCRIPT-SYNTAX
         <store> MStore:Map => MStore L |-> false </store>
         <loc> L:Int => L +Int 1 </loc>
     
-    rule <k> I:Id = V:Bool => Skip ... </k>
+    rule <k> I:Id = V:BExp => Skip ... </k>
         <env> ... I |-> L ... </env>
         <store> ... L |-> (_ => V) ... </store>
 
@@ -182,19 +192,29 @@ module TYPESCRIPT-SYNTAX
         <loc> L:Int => L +Int 1 </loc>
 
     // REGRA VAR PARA STRING
-    rule <k> var I:Id = V:String => Skip ...</k>
+    rule <k> var I:Id = V:SExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
         <store> MStore:Map => MStore L |-> V</store> 
         <loc> L:Int => L +Int 1</loc>
 
-    rule <k>I:Id : String = V:String => Skip ...</k>
+    rule <k>I:Id : String = V:SExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env>
         <store> MStore:Map => MStore L |-> V</store>
         <loc> L:Int => L +Int 1</loc>
 
-    rule <k> I:Id = V:String => Skip ... </k>
+    rule <k> I:Id = V:SExp => Skip ... </k>
         <env> ... I |-> L ... </env>
         <store> ... L |-> (_ => V) ... </store>
+
+    rule <k> var I:Id = I1:Id + I2:Id => var I = V1 + V2 ... </k> 
+        <env> 
+            ... I1 |-> L1
+                I2 |-> L2 ...
+        </env>
+        <store> 
+            ... L1 |-> V1:String  
+                L2 |-> V2:String ... 
+        </store>     
 
     // Regra ArrayList 
 
