@@ -154,11 +154,6 @@ module TYPESCRIPT-SYNTAX
         <store> MStore:Map => MStore L |-> 0 </store>
         <loc> L:Int => L +Int 1 </loc>
 
-    // REGRA QUE DÁ PROBLEMA
-  /*   rule <k> I1:Id = I2:Id => I1 = V ... </k>
-        <env> ... I2 |-> L ... </env>
-        <store> ... L |-> V  ... </store> */
-
     // REGRA VAR PARA INT
     rule <k> var I:Id = V:AExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
