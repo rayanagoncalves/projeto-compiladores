@@ -19,6 +19,7 @@ module TYPESCRIPT-SYNTAX
                 | Skip
                 | FuncDec
                 | FuncCall
+<<<<<<< HEAD
                 | Array
                 | Foreach
                 | Print
@@ -31,7 +32,16 @@ module TYPESCRIPT-SYNTAX
     syntax Local ::= "local" "(" Id "," Stmt ")" 
 
     syntax Print ::= "console.log" "(" String ")" 
-
+=======
+              //| ArrayList
+    
+    syntax Params ::= List{Id, ","}
+    syntax FuncDec ::= "function" Id "(" Params ")" "{" Stmt "}"
+    syntax Values ::= List{Int, ","}
+    syntax FuncCall ::= Id "(" Values ")"
+    syntax Local ::= "local" "(" Id "," Stmt ")"
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
+g
     syntax AExp ::= Int 
                 > left: AExp "/" AExp [seqstrict, left]
                 > left: AExp "*" AExp [seqstrict, left]
@@ -44,7 +54,6 @@ module TYPESCRIPT-SYNTAX
                 | Id
 
     syntax ConcatOrSum ::= Id "+" Id 
-        
     syntax BExp ::= Bool
                 | AExp ">" AExp [strict]
                 | AExp "<" AExp [strict]
@@ -61,8 +70,12 @@ module TYPESCRIPT-SYNTAX
 
     syntax DecVar ::= Id ":" Type
                     | "var" Id
+<<<<<<< HEAD
                     
  //   syntax DecIds ::= "var" Ids
+=======
+               //     | Ids ":" Type
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
 
     syntax Type ::= "number" 
                   | "boolean" 
@@ -76,7 +89,12 @@ module TYPESCRIPT-SYNTAX
                         | Id "=" SExp [strict(2)]
                         | DecVar "=" SExp [strict(2)]
                         | Id "=" ConcatOrSum 
+<<<<<<< HEAD
                  //       | DecIds "=" Int
+=======
+
+   // syntax Teste ::= AExp | BExp | SExp
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
 
     syntax ElseIfStmt ::= "else if" "(" BExp ")" "{" Block "}"
                         | "else" "{" Block "}"
@@ -84,17 +102,26 @@ module TYPESCRIPT-SYNTAX
 
 //    syntax ListValues ::= List{Int, ","}
 
+<<<<<<< HEAD
     syntax ListValues ::= List{TypesVal, ","}
     syntax Array ::= "[" ListValues "]"
     syntax Ids ::= List{Id, ","}
     syntax Foreach ::= "foreach" "(" Id "in" Array ")"  "{" Stmt "}"
+=======
+//    syntax Ids ::= List{Id, ","}
+
+//    syntax ArrayList ::= "[" ListValues "]"
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
 
     syntax Skip ::= "Skip"
 
     rule Skip => .
 
+<<<<<<< HEAD
 
     // OPERAÇÕES ARITMETICAS
+=======
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
     rule I1:Int + I2:Int => I1 +Int I2
     rule I1:Int - I2:Int => I1 -Int I2
     rule I1:Int * I2:Int => I1 *Int I2
@@ -145,7 +172,10 @@ module TYPESCRIPT-SYNTAX
     rule S1:Stmt S2:Stmt => S1 ~> S2 [structural]
     rule local(I:Id, S1:Stmt S2:Stmt) => local(I, S1) ~> local(I, S2) [structural]
 
+<<<<<<< HEAD
     // CONCATENAÇÃO STRING
+=======
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
     rule S1:String + S2:String => S1 +String S2
     
     ////////////////////////////// REGRAS - VARIAVEIS /////////////////////////////////
@@ -227,7 +257,11 @@ module TYPESCRIPT-SYNTAX
         <env> ... I |-> L ... </env>
         <store> ... L |-> (_ => V) ... </store>
 
+<<<<<<< HEAD
     //////////////////////////// REGRA SOMAR IDS diferentes - String  
+=======
+    // REGRA SOMAR IDS - String  
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
     rule <k> var I:Id = I1:Id + I2:Id => var I = V1 + V2 ... </k> 
         <env> 
             ... I1 |-> L1
@@ -290,7 +324,11 @@ module TYPESCRIPT-SYNTAX
         </store>  
     
 
+<<<<<<< HEAD
     ///////////////////////////////// REGRA SUBTRAIR IDS diferentes - INT 
+=======
+    // REGRA SUBTRAIR IDS - INT 
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
     rule <k> var I:Id = I1:Id - I2:Id => var I = V1 - V2 ... </k> 
         <env> 
             ... I1 |-> L1
@@ -321,7 +359,11 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:Int ... 
         </store>  
 
+<<<<<<< HEAD
     ////////////////////////////////// REGRA MULTIPLICAR IDS - INT 
+=======
+    // REGRA MULTIPLICAR IDS - INT 
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
     rule <k> var I:Id = I1:Id * I2:Id => var I = V1 * V2 ... </k> 
         <env> 
             ... I1 |-> L1
@@ -352,7 +394,11 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:Int ... 
         </store>  
 
+<<<<<<< HEAD
     ////////////////////////// REGRA DIVISÃO IDS - INT 
+=======
+    // REGRA DIVISÃO IDS - INT 
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
     rule <k> var I:Id = I1:Id / I2:Id => var I = V1 / V2 ... </k> 
         <env> 
             ... I1 |-> L1
@@ -383,6 +429,7 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:Int ... 
         </store>  
 
+<<<<<<< HEAD
 
 
         // ----------- REGRAS FOREACH ---------
@@ -530,6 +577,28 @@ module TYPESCRIPT-SYNTAX
         <store> 
             ... L |-> V:String ... 
         </store>  
+=======
+ /*   rule <k> I:Id : number = I1:Id =>  I : number = V1 ... </k> 
+        <env> 
+            ... I1 |-> L1 ...
+        </env>
+        <store> 
+            ... L1 |-> V1:Int ...  
+        </store>   */
+
+    // Regra ArrayList 
+
+ /*   rule <k>(I:Id , Xs:Ids) : T:Type = V:Int => Xs:T = V ... </k>
+        <env> MEnv:Map => MEnv I |-> L </env>
+        <store> MStore:Map => MStore L |-> V</store>
+        <loc> L:Int => L +Int 1</loc>
+
+    rule <k>(I:Id , Xs:Ids) : T:Type => Xs:T ... </k>
+        <env> MEnv:Map => MEnv I |-> L </env>
+        <store> MStore:Map => MStore L |-> 0</store>
+        <loc> L:Int => L +Int 1</loc>  */
+
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
 
 
 
@@ -556,7 +625,11 @@ module TYPESCRIPT-SYNTAX
             ...
         </thread>
     
+<<<<<<< HEAD
     rule <k> I:Id ((V:TypesVal, Vs:Values)) => I:Id (Vs)  ... </k>
+=======
+    rule <k> I:Id ((V:Int, Vs:Values)) => I:Id (Vs)  ... </k>
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
         <thread>
             ...
             <id> I </id>
@@ -577,6 +650,7 @@ module TYPESCRIPT-SYNTAX
         <store> SMap:Map => SMap L |-> V </store>
         <loc> L => L +Int 1 </loc>
 
+<<<<<<< HEAD
     // -----------REGRAS FUNÇÕES - ESCOPO LOCAL -----------------------
 
     // INT 
@@ -708,6 +782,8 @@ module TYPESCRIPT-SYNTAX
 
     // ---------------------------------------------------------------------
 
+=======
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
 
 
 
@@ -725,10 +801,18 @@ module TYPESCRIPT-SYNTAX
         <thread>
             ...
             <id> FuncId </id>
+<<<<<<< HEAD
             <localEnv> ... I |-> L ... </localEnv>
             ...
         </thread>
         <store> ... L |-> (_ => V:Int) ... </store>
+=======
+            <localEnv> Rho:Map => Rho I |-> L </localEnv>
+            ...
+        </thread>
+        <store> SMap:Map => SMap L |-> V </store>
+        <loc> L => L +Int 1 </loc>  
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
 
         
 
@@ -747,10 +831,18 @@ module TYPESCRIPT-SYNTAX
         <thread>
             ...
             <id> FuncId </id>
+<<<<<<< HEAD
             <localEnv> ... I |-> L ... </localEnv>
             ...
         </thread>
         <store> ... L |-> (_ => V:String) ... </store>
+=======
+            <localEnv> Rho:Map => Rho I |-> L </localEnv>
+            ...
+        </thread>
+        <store> SMap:Map => SMap L |-> V </store>
+        <loc> L => L +Int 1 </loc>  
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
 
     rule <k> local(FuncId:Id, var I:Id = V:String ) => Skip ... </k>
         <thread>
@@ -797,6 +889,7 @@ module TYPESCRIPT-SYNTAX
 
 
 
+<<<<<<< HEAD
 //  local ( teste , var y = x + x )
 
     // REGRA SOMAR IDS - INT (LOCAL) 
@@ -898,10 +991,17 @@ module TYPESCRIPT-SYNTAX
         <store> 
             ... L |-> V:String ... 
         </store> 
+=======
 
 
 
 
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
+
+
+
+
+<<<<<<< HEAD
     rule <k> local(FuncId:Id, I:Id = I1:Id + I2:Id ) => local(FuncId, I = V + I2) ... </k> 
         <thread>
             ...
@@ -939,11 +1039,21 @@ module TYPESCRIPT-SYNTAX
 
 
      rule <k> local(FuncId:Id, var I:Id = I1:String + I2:Id ) => local(FuncId, var I = I1 + V) ... </k> 
+=======
+
+
+
+
+
+
+   /* rule <k> local(FuncId:Id, I2:Id) => V ... </k>
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
         <thread>
             ...
             <id> FuncId </id>
             <localEnv> ... I2 |-> L ... </localEnv>
             ...
+<<<<<<< HEAD
         </thread>
         <store> 
             ... L |-> V:String ... 
@@ -959,6 +1069,11 @@ module TYPESCRIPT-SYNTAX
 
 
 
+=======
+        </thread>   
+         <store> ... SMap:Map => SMap L |-> V ... </store>
+    */
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
 
 
     configuration <T>
@@ -972,7 +1087,10 @@ module TYPESCRIPT-SYNTAX
                 <localEnv> .Map </localEnv>
             </thread> 
         </functions>
+<<<<<<< HEAD
         <out> .Set </out>
+=======
+>>>>>>> 8f00ec8938c56048301e0a6418a180147410c202
         <env> .Map </env>
         <store> .Map </store>
         <loc> 1 </loc>
