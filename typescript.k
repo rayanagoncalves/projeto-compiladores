@@ -23,6 +23,8 @@ module TYPESCRIPT-SYNTAX
                 | Foreach
                 | Print
 
+
+    // SINTAXES PARA FUNÇÕES //
     syntax TypesVal ::= Int | String | Bool
     syntax Params ::= List{Id, ","} 
     syntax FuncDec ::= "function" Id "(" Params ")" "{" Stmt "}"
@@ -30,6 +32,7 @@ module TYPESCRIPT-SYNTAX
     syntax FuncCall ::= Id "(" Values ")"
     syntax Local ::= "local" "(" Id "," Stmt ")" 
 
+    // PRINT //
     syntax Print ::= "console.log" "(" String ")" 
 
     syntax AExp ::= Int 
@@ -83,27 +86,32 @@ module TYPESCRIPT-SYNTAX
                         | "else if" "(" BExp ")" "{" Block "}" ElseIfStmt
 
 //    syntax ListValues ::= List{Int, ","}
-
+    
+    // ARRAY
     syntax ListValues ::= List{TypesVal, ","}
     syntax Array ::= "[" ListValues "]"
     syntax Ids ::= List{Id, ","}
     syntax Foreach ::= "foreach" "(" Id "in" Array ")"  "{" Stmt "}"
 
+    // skip
     syntax Skip ::= "Skip"
 
     rule Skip => .
-
+    
+    // OPERAÇÕES ARITMÉTICAS
     rule I1:Int + I2:Int => I1 +Int I2
     rule I1:Int - I2:Int => I1 -Int I2
     rule I1:Int * I2:Int => I1 *Int I2
     rule I1:Int / I2:Int => I1 /Int I2
 
+     // OPERAÇÕES BOOLEANAS
     rule I1:Int < I2:Int => I1 <Int I2
     rule I1:Int > I2:Int => I1 >Int I2
     rule I1:Int <= I2:Int => I1 <=Int I2
     rule I1:Int >= I2:Int => I1 >=Int I2
     rule I1:Int == I2:Int => I1 ==Int I2
 
+   // OU , E , NOT
     rule true || false => true 
     rule true || true => true 
     rule false || false => false 
@@ -115,6 +123,7 @@ module TYPESCRIPT-SYNTAX
     rule ! true => false
     rule ! false => true
     
+    // ESTRUTURAS DE CONDIÇÃO
     rule if (true) { S:Stmt } => S
     rule if (false) { _ } => Skip
     rule if (true) { B } S:ElseIfStmt => B
@@ -123,9 +132,11 @@ module TYPESCRIPT-SYNTAX
     rule else if ( B:BExp ) { S:Stmt } => if ( B ) { S }
     rule else { S } => S
 
+    // IF TERNÁRIO
     rule true ? B:Block : _ => B 
     rule false ? _ : B:Block => B
 
+    // ESTRUTURAS DE REPETIÇÃO
     rule while (B:BExp) { S:Stmt } => if(B){ S while (B) { S } } [structural]
 
     rule do { S:Stmt } while (B:BExp) => S ~> if(B){ do { S } while (B) } [structural]
@@ -139,8 +150,16 @@ module TYPESCRIPT-SYNTAX
     rule S1:Stmt S2:Stmt => S1 ~> S2 [structural]
     rule local(I:Id, S1:Stmt S2:Stmt) => local(I, S1) ~> local(I, S2) [structural]
 
+    // CONCATENAÇÃO DE STRING
     rule S1:String + S2:String => S1 +String S2
     
+
+    // PEGANDO VALOR DA VARIÁVEL
+    rule <k> I:Id => V ... </k>
+        <env> ... I |-> L ... </env>
+        <store> ... L |-> V ... </store>
+
+    // VARIÁVEIS - INT
     rule <k> I:Id : number => Skip ... </k>
         <env> MEnv:Map => MEnv I |-> L </env>
         <store> MStore:Map => MStore L |-> 0 </store>
@@ -149,10 +168,6 @@ module TYPESCRIPT-SYNTAX
     rule <k> I:Id = V:AExp => Skip ... </k>
         <env> ... I |-> L ... </env>
         <store> ... L |-> (_ => V) ... </store>
-
-    rule <k> I:Id => V ... </k>
-        <env> ... I |-> L ... </env>
-        <store> ... L |-> V ... </store>
 
     rule <k>I:Id : number = V:AExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
@@ -172,13 +187,12 @@ module TYPESCRIPT-SYNTAX
         <store> MStore:Map => MStore L |-> 0 </store>
         <loc> L:Int => L +Int 1 </loc>
 
-    // REGRA VAR PARA INT
     rule <k> var I:Id = V:AExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
         <store> MStore:Map => MStore L |-> V</store> 
         <loc> L:Int => L +Int 1</loc> 
 
-    // REGRA VAR PARA BOOL
+    // VARIAVEIS - BOOL
     rule <k> var I:Id = V:BExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
         <store> MStore:Map => MStore L |-> V</store> 
@@ -198,13 +212,12 @@ module TYPESCRIPT-SYNTAX
         <env> ... I |-> L ... </env>
         <store> ... L |-> (_ => V) ... </store>
 
-    // REGRAS STRING
+    // VARIAVEIS - STRING
     rule <k> I:Id : string => Skip ... </k>
         <env> MEnv:Map => MEnv I |-> L </env>
         <store> MStore:Map => MStore L |-> "" </store>
         <loc> L:Int => L +Int 1 </loc>
 
-    // REGRA VAR PARA STRING
     rule <k> var I:Id = V:SExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
         <store> MStore:Map => MStore L |-> V</store> 
@@ -219,7 +232,7 @@ module TYPESCRIPT-SYNTAX
         <env> ... I |-> L ... </env>
         <store> ... L |-> (_ => V) ... </store>
 
-    // REGRA SOMAR IDS - String  
+    // REGRA SOMAR IDS DIFERENTES - String  
     rule <k> var I:Id = I1:Id + I2:Id => var I = V1 + V2 ... </k> 
         <env> 
             ... I1 |-> L1
@@ -250,7 +263,7 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:String ... 
         </store>    
 
-    // REGRA SOMAR IDS - INT 
+   // REGRA SOMAR IDS DIFERENTES - INT
     rule <k> var I:Id = I1:Id + I2:Id => var I = V1 + V2 ... </k> 
         <env> 
             ... I1 |-> L1
@@ -282,7 +295,7 @@ module TYPESCRIPT-SYNTAX
         </store>  
     
 
-    // REGRA SUBTRAIR IDS - INT 
+    // REGRA SUBTRAIR IDS DIFERENTES - INT 
     rule <k> var I:Id = I1:Id - I2:Id => var I = V1 - V2 ... </k> 
         <env> 
             ... I1 |-> L1
@@ -313,7 +326,7 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:Int ... 
         </store>  
 
-    // REGRA MULTIPLICAR IDS - INT 
+    // REGRA MULTIPLICAR IDS DIFERENTES - INT 
     rule <k> var I:Id = I1:Id * I2:Id => var I = V1 * V2 ... </k> 
         <env> 
             ... I1 |-> L1
@@ -344,7 +357,7 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:Int ... 
         </store>  
 
-    // REGRA DIVISÃO IDS - INT 
+    // REGRA DIVISÃO IDS DIFERENTES - INT 
     rule <k> var I:Id = I1:Id / I2:Id => var I = V1 / V2 ... </k> 
         <env> 
             ... I1 |-> L1
@@ -424,7 +437,7 @@ module TYPESCRIPT-SYNTAX
 
     
 
-      // REGRA SOMAR IDS - INT (GLOBAL) 
+      // REGRA SOMAR IDS IGUAIS - INT (GLOBAL) 
     rule <k> var I:Id = I1:Id + I2:Id => var I = V + I2 ... </k> 
             <env> ... I1 |-> L ... </env>
         <store> 
@@ -474,7 +487,7 @@ module TYPESCRIPT-SYNTAX
         </store>  
 
 
-  // REGRA SOMAR IDS - STRING (GLOBAL) 
+  // REGRA CONCATENAR IDS IGUAIS - STRING (GLOBAL) 
     rule <k> var I:Id = I1:Id + I2:Id => var I = V + I2 ... </k> 
             <env> ... I1 |-> L ... </env>
         <store> 
@@ -526,7 +539,7 @@ module TYPESCRIPT-SYNTAX
 
 
 
-    // REGRAS FUNÇÃO
+    // REGRAS PARA FUNÇÃO
 
     rule <k> function I:Id (P:Params) { S:Stmt } => Skip ... </k>
         ( .Bag => <thread> 
@@ -548,6 +561,7 @@ module TYPESCRIPT-SYNTAX
             ...
         </thread>
     
+    // CHAMADA DA FUNÇÃO
     rule <k> I:Id ((V:TypesVal, Vs:Values)) => I:Id (Vs)  ... </k>
         <thread>
             ...
@@ -569,9 +583,9 @@ module TYPESCRIPT-SYNTAX
         <store> SMap:Map => SMap L |-> V </store>
         <loc> L => L +Int 1 </loc>
 
-    // --------------------------------------------------------------------
+    // ---------- INICIO DAS OPERAÇÕES ARITMÉTICAS NO ESCOPO LOCAL  -----------------
 
-    // INT 
+    // INT - SOMA  
     rule <k> local(FuncId:Id, var I:Id = V1:Int + V2:Int) => Skip ... </k>
         <thread>
             ...
@@ -599,9 +613,100 @@ module TYPESCRIPT-SYNTAX
             <localEnv> ... I |-> L ... </localEnv>
             ...
         </thread>
-        <store> ... L |-> (_ => V1:Int+ V2:Int) ... </store>
+        <store> ... L |-> (_ => V1 +Int V2) ... </store>
 
-    // string
+        // INT - SUBTRAÇÃO  ------------------------------------- AINDA TESTAR
+    rule <k> local(FuncId:Id, var I:Id = V1:Int - V2:Int) => Skip ... </k>
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> Rho:Map => Rho I |-> L </localEnv>
+            ...
+        </thread>
+        <store> SMap:Map => SMap L |-> (V1 -Int V2) </store>
+        <loc> L => L +Int 1 </loc>
+
+    rule <k> local(FuncId:Id, I:Id : number = V1:Int - V2:Int) => Skip ... </k>
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> Rho:Map => Rho I |-> L </localEnv>
+            ...
+        </thread>
+        <store> SMap:Map => SMap L |-> (V1 -Int V2) </store>
+        <loc> L => L +Int 1 </loc>
+
+    rule <k> local(FuncId:Id, I:Id = V1:Int - V2:Int) => Skip ... </k>
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> ... L |-> (_ => V1 -Int V2) ... </store>
+
+    // INT - MULTIPLICAÇÃO ------------------------------------- AINDA TESTAR
+    rule <k> local(FuncId:Id, var I:Id = V1:Int * V2:Int) => Skip ... </k>
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> Rho:Map => Rho I |-> L </localEnv>
+            ...
+        </thread>
+        <store> SMap:Map => SMap L |-> (V1 *Int V2) </store>
+        <loc> L => L +Int 1 </loc>
+
+    rule <k> local(FuncId:Id, I:Id : number = V1:Int - V2:Int) => Skip ... </k>
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> Rho:Map => Rho I |-> L </localEnv>
+            ...
+        </thread>
+        <store> SMap:Map => SMap L |-> (V1 *Int V2) </store>
+        <loc> L => L +Int 1 </loc>
+
+    rule <k> local(FuncId:Id, I:Id = V1:Int * V2:Int) => Skip ... </k>
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> ... L |-> (_ => V1 * Int V2) ... </store>
+
+
+    // INT - DIVISÃO ------------------------------------- AINDA TESTAR
+    rule <k> local(FuncId:Id, var I:Id = V1:Int / V2:Int) => Skip ... </k>
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> Rho:Map => Rho I |-> L </localEnv>
+            ...
+        </thread>
+        <store> SMap:Map => SMap L |-> (V1 /Int V2) </store>
+        <loc> L => L +Int 1 </loc>
+
+    rule <k> local(FuncId:Id, I:Id : number = V1:Int / V2:Int) => Skip ... </k>
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> Rho:Map => Rho I |-> L </localEnv>
+            ...
+        </thread>
+        <store> SMap:Map => SMap L |-> (V1 /Int V2) </store>
+        <loc> L => L +Int 1 </loc>
+
+    rule <k> local(FuncId:Id, I:Id = V1:Int / V2:Int) => Skip ... </k>
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> ... L |-> (_ => V1 / Int V2) ... </store>
+
+    // INICIO CONCATENAÇÃO STRING (local)
 
      rule <k> local(FuncId:Id, var I:Id = V1:String + V2:String) => Skip ... </k>
         <thread>
@@ -632,7 +737,7 @@ module TYPESCRIPT-SYNTAX
         </thread>
         <store> ... L |-> (_ => V1 +String V2) ... </store>
 
-    // inicializando variáveis no escopo local - String
+    // --------------- inicializando variáveis no escopo local - String
 
     rule <k> local(FuncId:Id, I:Id : string ) => Skip ... </k>
         <thread>
@@ -654,7 +759,7 @@ module TYPESCRIPT-SYNTAX
         <store> SMap:Map => SMap L |-> "" </store>
         <loc> L => L +Int 1 </loc>
 
-    // inicializando variáveis no escopo local - Number
+    // ----------------- inicializando variáveis no escopo local - Number
 
     rule <k> local(FuncId:Id, I:Id : number ) => Skip ... </k>
         <thread>
@@ -676,7 +781,7 @@ module TYPESCRIPT-SYNTAX
         <store> SMap:Map => SMap L |-> 0 </store>
         <loc> L => L +Int 1 </loc>
 
-     // inicializando variáveis no escopo local - Boolean
+     // ------------------ inicializando variáveis no escopo local - Boolean
 
     rule <k> local(FuncId:Id, I:Id : boolean ) => Skip ... </k>
         <thread>
@@ -698,9 +803,7 @@ module TYPESCRIPT-SYNTAX
         <store> SMap:Map => SMap L |-> false </store>
         <loc> L => L +Int 1 </loc>
 
-    // ---------------------------------------------------------------------
-
-
+    // COLOCANDO O VALOR INT NAS VARIÁVEIS (LOCAL) -----------------------------------
 
 
     rule <k> local(FuncId:Id, I:Id : number = V:Int ) => Skip ... </k>
@@ -723,6 +826,8 @@ module TYPESCRIPT-SYNTAX
         <store> ... L |-> (_ => V:Int) ... </store>
 
         
+
+    // COLOCANDO O VALOR STRING NAS VARIÁVEIS (LOCAL)--------------------- 
 
 
     rule <k> local(FuncId:Id, I:Id : string = V:String ) => Skip ... </k>
@@ -755,7 +860,7 @@ module TYPESCRIPT-SYNTAX
         <loc> L => L +Int 1 </loc>
 
     
-
+    // COLOCANDO O VALOR BOOLEAN NAS VARIÁVEIS (LOCAL)--------------------- 
 
     rule <k> local(FuncId:Id, I:Id : boolean = V:Bool ) => Skip ... </k>
         <thread>
@@ -817,11 +922,6 @@ module TYPESCRIPT-SYNTAX
 
 
 
-
-
-
-
-
     rule <k> local(FuncId:Id, I:Id = I1:Id + I2:Id ) => local(FuncId, I = V + I2) ... </k> 
         <thread>
             ...
@@ -847,7 +947,6 @@ module TYPESCRIPT-SYNTAX
 
 
 
-
     rule <k> local(FuncId:Id, I:Id : number = I1:Id + I2:Id ) => local(FuncId, I : number = V + I2) ... </k> 
         <thread>
             ...
@@ -869,11 +968,236 @@ module TYPESCRIPT-SYNTAX
         </thread>
         <store> 
             ... L |-> V:Int ... 
+        </store> 
+
+    // REGRA SUBTRAIR IDS - INT (LOCAL)   ----------------------------------- AINDA TESTAR
+    rule <k> local(FuncId:Id, var I:Id = I1:Id - I2:Id ) => local(FuncId, var I = V - I2) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I1 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+     rule <k> local(FuncId:Id, var I:Id = I1:Int - I2:Id ) => local(FuncId, var I = I1 - V) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I2 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
         </store>  
 
 
 
+    rule <k> local(FuncId:Id, I:Id = I1:Id - I2:Id ) => local(FuncId, I = V - I2) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I1 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+     rule <k> local(FuncId:Id, I:Id = I1:Int - I2:Id ) => local(FuncId, I = I1 - V) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I2 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+
+    rule <k> local(FuncId:Id, I:Id : number = I1:Id - I2:Id ) => local(FuncId, I : number = V - I2) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I1 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+     rule <k> local(FuncId:Id, I:Id : number = I1:Int - I2:Id ) => local(FuncId, I : number = I1 - V) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I2 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>
+
+
+// REGRA MULTIPLICAR IDS - INT (LOCAL)  ----------------------------------- AINDA TESTAR
+    rule <k> local(FuncId:Id, var I:Id = I1:Id * I2:Id ) => local(FuncId, var I = V * I2) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I1 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+     rule <k> local(FuncId:Id, var I:Id = I1:Int * I2:Id ) => local(FuncId, var I = I1 * V) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I2 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+
+    rule <k> local(FuncId:Id, I:Id = I1:Id * I2:Id ) => local(FuncId, I = V * I2) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I1 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+     rule <k> local(FuncId:Id, I:Id = I1:Int * I2:Id ) => local(FuncId, I = I1 * V) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I2 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+
+    rule <k> local(FuncId:Id, I:Id : number = I1:Id * I2:Id ) => local(FuncId, I : number = V * I2) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I1 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+     rule <k> local(FuncId:Id, I:Id : number = I1:Int * I2:Id ) => local(FuncId, I : number = I1 * V) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I2 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>
+
+
+// REGRA DIVISAO IDS - INT (LOCAL)  ----------------------------------- AINDA TESTAR
+    rule <k> local(FuncId:Id, var I:Id = I1:Id / I2:Id ) => local(FuncId, var I = V / I2) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I1 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+     rule <k> local(FuncId:Id, var I:Id = I1:Int / I2:Id ) => local(FuncId, var I = I1 / V) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I2 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+
+    rule <k> local(FuncId:Id, I:Id = I1:Id / I2:Id ) => local(FuncId, I = V / I2) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I1 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+     rule <k> local(FuncId:Id, I:Id = I1:Int / I2:Id ) => local(FuncId, I = I1 / V) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I2 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+
+    rule <k> local(FuncId:Id, I:Id : number = I1:Id / I2:Id ) => local(FuncId, I : number = V / I2) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I1 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store>  
+
+
+     rule <k> local(FuncId:Id, I:Id : number = I1:Int / I2:Id ) => local(FuncId, I : number = I1 / V) ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I2 |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> 
+            ... L |-> V:Int ... 
+        </store> 
+
+
+
     
+    // REGRA CONCATENAR IDS - STRING (LOCAL) 
     rule <k> local(FuncId:Id, I:Id : string = I1:Id + I2:Id ) => local(FuncId, I : string = V + I2) ... </k> 
         <thread>
             ...
