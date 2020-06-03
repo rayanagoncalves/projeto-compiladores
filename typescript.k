@@ -22,6 +22,7 @@ module TYPESCRIPT-SYNTAX
                 | Array
                 | Foreach
                 | Print
+                | Return
 
 
     // SINTAXES PARA FUNÇÕES //
@@ -31,9 +32,11 @@ module TYPESCRIPT-SYNTAX
     syntax Values ::= List{TypesVal, ","}
     syntax FuncCall ::= Id "(" Values ")"
     syntax Local ::= "local" "(" Id "," Stmt ")" 
+    syntax Return ::= "return" Id 
+                    | "return" TypesVal
 
     // PRINT //
-    syntax Print ::= "console.log" "(" String ")" 
+    syntax Print ::= "console.log" "(" TypesVal ")" 
 
     syntax AExp ::= Int 
                 > left: AExp "/" AExp [seqstrict, left]
@@ -79,7 +82,6 @@ module TYPESCRIPT-SYNTAX
                         | Id "=" SExp [strict(2)]
                         | DecVar "=" SExp [strict(2)]
                         | Id "=" ConcatOrSum 
-                 //       | DecIds "=" Int
 
     syntax ElseIfStmt ::= "else if" "(" BExp ")" "{" Block "}"
                         | "else" "{" Block "}"
@@ -466,7 +468,7 @@ module TYPESCRIPT-SYNTAX
         </store>  
 
 
- rule <k> I:Id : number = I1:Id + I2:Id => I : number = V + I2 ... </k> 
+     rule <k> I:Id : number = I1:Id + I2:Id => I : number = V + I2 ... </k> 
             <env> ... I1 |-> L ... </env>
         <store> 
             ... L |-> V:Int ... 
@@ -673,7 +675,7 @@ module TYPESCRIPT-SYNTAX
             <localEnv> ... I |-> L ... </localEnv>
             ...
         </thread>
-        <store> ... L |-> (_ => V1 * Int V2) ... </store>
+        <store> ... L |-> (_ => V1:Int *Int V2:Int) ... </store>
 
 
     // INT - DIVISÃO ------------------------------------- AINDA TESTAR
@@ -704,7 +706,7 @@ module TYPESCRIPT-SYNTAX
             <localEnv> ... I |-> L ... </localEnv>
             ...
         </thread>
-        <store> ... L |-> (_ => V1 / Int V2) ... </store>
+        <store> ... L |-> (_ => V1:Int /Int V2:Int) ... </store>
 
     // INICIO CONCATENAÇÃO STRING (local)
 
@@ -1272,9 +1274,34 @@ module TYPESCRIPT-SYNTAX
         </store> 
 
 
+
+    // retorno da função 
+
+    rule <k> local(FuncId:Id, return I:Id ) => V ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> ... L |-> V ... </store>
+
+    rule <k> local(FuncId:Id, return T:TypesVal ) => T ... </k> 
+        <thread>
+            ...
+            <id> FuncId </id>
+            ...
+        </thread>
+
+  //  rule local(I:Id, Return:R S2:Stmt) => local(I, R) ~> Skip [structural]
+      
+
+
+
     // print
-    rule <k> console.log(I:String) => Skip </k>
-        <out> PSet:Set => PSet SetItem(I) </out>
+    rule <k> console.log(T:TypesVal) => Skip </k>
+        <out> PSet:Set => PSet SetItem(T) </out>
+
 
 
 
