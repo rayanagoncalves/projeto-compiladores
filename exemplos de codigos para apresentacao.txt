@@ -28,7 +28,26 @@ else if (num1 < num2)
 }
 else if (num1 == num2) 
 {
-    console.log('x é igual a y');
+    console.log("x é igual a y");
+}
+
+// mais operacoes booleanas (e, ou, not)
+
+var condi1 = false
+
+if (!condi1) {
+
+ var condi2 = true
+
+if (condi1 || condi2) {
+
+    condi1 = true
+
+   if (condi1 && condi2) {
+    console.log("Todas as condições foram atendidas")
+    }
+}
+  
 }
 
 // while
