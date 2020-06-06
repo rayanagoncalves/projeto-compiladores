@@ -28,7 +28,6 @@ module TYPESCRIPT-SYNTAX
     syntax TypesVal ::= Int | String | Bool
     syntax Params ::= List{Id, ","} 
     syntax FuncDec ::= "function" Id "(" Params ")" "{" Stmt "}"
-                    | Id "(" Params ")" "{" Stmt "}"
     syntax Values ::= List{TypesVal, ","}
     syntax FuncCall ::= Id "(" Values ")"
     syntax Local ::= "local" "(" Id "," Stmt ")" 
@@ -66,7 +65,7 @@ module TYPESCRIPT-SYNTAX
     syntax AExpMod ::= Id "++"
                     | Id "--"
 
-    syntax DecVar ::= Id ":" Type
+    syntax DecVar ::= "var" Id ":" Type
                     | "var" Id
 
     syntax Type ::= "number" 
@@ -159,7 +158,7 @@ module TYPESCRIPT-SYNTAX
         <store> ... L |-> V ... </store>
 
     // VARIÁVEIS - INT
-    rule <k> I:Id : number => Skip ... </k>
+    rule <k>  var I:Id : number => Skip ... </k>
         <env> MEnv:Map => MEnv I |-> L </env>
         <store> MStore:Map => MStore L |-> 0 </store>
         <loc> L:Int => L +Int 1 </loc>
@@ -168,7 +167,7 @@ module TYPESCRIPT-SYNTAX
         <env> ... I |-> L ... </env>
         <store> ... L |-> (_ => V) ... </store>
 
-    rule <k>I:Id : number = V:AExp => Skip ...</k>
+    rule <k> var I:Id : number = V:AExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
         <store> MStore:Map => MStore L |-> V</store> 
         <loc> L:Int => L +Int 1</loc> 
@@ -197,12 +196,12 @@ module TYPESCRIPT-SYNTAX
         <store> MStore:Map => MStore L |-> V</store> 
         <loc> L:Int => L +Int 1</loc>   
 
-    rule <k>I:Id : boolean = V:BExp => Skip ...</k>
+    rule <k>var I:Id : boolean = V:BExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env> 
         <store> MStore:Map => MStore L |-> V</store> 
         <loc> L:Int => L +Int 1</loc> 
 
-    rule <k> I:Id : boolean => Skip ... </k>
+    rule <k> var I:Id : boolean => Skip ... </k>
         <env> MEnv:Map => MEnv I |-> L </env>
         <store> MStore:Map => MStore L |-> false </store>
         <loc> L:Int => L +Int 1 </loc>
@@ -212,7 +211,7 @@ module TYPESCRIPT-SYNTAX
         <store> ... L |-> (_ => V) ... </store>
 
     // VARIAVEIS - STRING
-    rule <k> I:Id : string => Skip ... </k>
+    rule <k> var I:Id : string => Skip ... </k>
         <env> MEnv:Map => MEnv I |-> L </env>
         <store> MStore:Map => MStore L |-> "" </store>
         <loc> L:Int => L +Int 1 </loc>
@@ -222,7 +221,7 @@ module TYPESCRIPT-SYNTAX
         <store> MStore:Map => MStore L |-> V</store> 
         <loc> L:Int => L +Int 1</loc>
 
-    rule <k>I:Id : string = V:SExp => Skip ...</k>
+    rule <k> var I:Id : string = V:SExp => Skip ...</k>
         <env> MEnv:Map => MEnv I |-> L </env>
         <store> MStore:Map => MStore L |-> V</store>
         <loc> L:Int => L +Int 1</loc>
@@ -252,7 +251,7 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:String ... 
         </store>   
 
-    rule <k> I:Id : string = I1:Id + I2:Id =>  I : string = V1 + V2 ... </k> 
+    rule <k> var I:Id : string = I1:Id + I2:Id =>  var I : string = V1 + V2 ... </k> 
         <env> 
             ... I1 |-> L1
                 I2 |-> L2 ...
@@ -283,7 +282,7 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:Int ... 
         </store>   
 
-    rule <k> I:Id : number = I1:Id + I2:Id =>  I : number = V1 + V2 ... </k> 
+    rule <k> var I:Id : number = I1:Id + I2:Id =>  var I : number = V1 + V2 ... </k> 
         <env> 
             ... I1 |-> L1
                 I2 |-> L2 ...
@@ -315,7 +314,7 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:Int ... 
         </store>   
 
-    rule <k> I:Id : number = I1:Id - I2:Id =>  I : number = V1 - V2 ... </k> 
+    rule <k> var I:Id : number = I1:Id - I2:Id =>  var I : number = V1 - V2 ... </k> 
         <env> 
             ... I1 |-> L1
                 I2 |-> L2 ...
@@ -346,7 +345,7 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:Int ... 
         </store>   
 
-    rule <k> I:Id : number = I1:Id * I2:Id =>  I : number = V1 * V2 ... </k> 
+    rule <k> var I:Id : number = I1:Id * I2:Id =>  var I : number = V1 * V2 ... </k> 
         <env> 
             ... I1 |-> L1
                 I2 |-> L2 ...
@@ -377,7 +376,7 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:Int ... 
         </store>   
 
-    rule <k> I:Id : number = I1:Id / I2:Id =>  I : number = V1 / V2 ... </k> 
+    rule <k> var I:Id : number = I1:Id / I2:Id =>  var I : number = V1 / V2 ... </k> 
         <env> 
             ... I1 |-> L1
                 I2 |-> L2 ...
@@ -429,7 +428,7 @@ module TYPESCRIPT-SYNTAX
 
         // Array tipado
 
-        rule <k> I:Id : T:Type [] = A:Array => Skip ... </k>
+        rule <k> var I:Id : T:Type [] = A:Array => Skip ... </k>
             <env> MEnv:Map => MEnv I |-> L </env>
             <store> MStore:Map => MStore L |-> A </store>
             <loc> L:Int => L +Int 1 </loc>
@@ -453,21 +452,21 @@ module TYPESCRIPT-SYNTAX
         </store>  
 
 
-    rule <k> I:Id : number = I1:Id + I2:Id => var I = V + I2 ... </k> 
+    rule <k> var I:Id : number = I1:Id + I2:Id => var I : number = V + I2 ... </k> 
             <env> ... I1 |-> L ... </env>
         <store> 
             ... L |-> V:Int ... 
         </store>  
 
 
-     rule <k> I:Id : number = I1:Int + I2:Id => I : number = I1 + V ... </k> 
+     rule <k> var I:Id : number = I1:Int + I2:Id => var I : number = I1 + V ... </k> 
             <env> ... I2 |-> L ... </env>
         <store> 
             ... L |-> V:Int ... 
         </store>  
 
 
-     rule <k> I:Id : number = I1:Id + I2:Id => I : number = V + I2 ... </k> 
+     rule <k> var I:Id : number = I1:Id + I2:Id => var I : number = V + I2 ... </k> 
             <env> ... I1 |-> L ... </env>
         <store> 
             ... L |-> V:Int ... 
@@ -502,21 +501,21 @@ module TYPESCRIPT-SYNTAX
         </store>  
 
 
-    rule <k> I:Id : string = I1:Id + I2:Id => I : string = V + I2 ... </k> 
+    rule <k> var I:Id : string = I1:Id + I2:Id => var I : string = V + I2 ... </k> 
             <env> ... I1 |-> L ... </env>
         <store> 
             ... L |-> V:String ... 
         </store>  
 
 
-     rule <k> I:Id : string = I1:String + I2:Id => I : string = I1 + V ... </k> 
+     rule <k> var I:Id : string = I1:String + I2:Id => var I : string = I1 + V ... </k> 
             <env> ... I2 |-> L ... </env>
         <store> 
             ... L |-> V:String ... 
         </store>  
 
 
-    rule <k> I:Id : string = I1:Id + I2:Id => I : string = V + I2 ... </k> 
+    rule <k> var I:Id : string = I1:Id + I2:Id => var I : string = V + I2 ... </k> 
             <env> ... I1 |-> L ... </env>
         <store> 
             ... L |-> V:String ... 
@@ -539,16 +538,6 @@ module TYPESCRIPT-SYNTAX
     // REGRAS PARA FUNÇÃO
 
     rule <k> function I:Id (P:Params) { S:Stmt } => Skip ... </k>
-        ( .Bag => <thread> 
-                <id> I </id>
-                <scope> S </scope>
-                <params> P </params>
-                <temp> P </temp>
-                <localEnv> .Map </localEnv>
-            </thread>
-        )
-
-    rule <k> I:Id (P:Params) { S:Stmt } => Skip ... </k>
         ( .Bag => <thread> 
                 <id> I </id>
                 <scope> S </scope>
@@ -603,7 +592,7 @@ module TYPESCRIPT-SYNTAX
         <store> SMap:Map => SMap L |-> (V1 +Int V2) </store>
         <loc> L => L +Int 1 </loc>
 
-    rule <k> local(FuncId:Id, I:Id : number = V1:Int + V2:Int) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : number = V1:Int + V2:Int) => Skip ... </k>
         <thread>
             ...
             <id> FuncId </id>
@@ -633,7 +622,7 @@ module TYPESCRIPT-SYNTAX
         <store> SMap:Map => SMap L |-> (V1 -Int V2) </store>
         <loc> L => L +Int 1 </loc>
 
-    rule <k> local(FuncId:Id, I:Id : number = V1:Int - V2:Int) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : number = V1:Int - V2:Int) => Skip ... </k>
         <thread>
             ...
             <id> FuncId </id>
@@ -663,7 +652,7 @@ module TYPESCRIPT-SYNTAX
         <store> SMap:Map => SMap L |-> (V1 *Int V2) </store>
         <loc> L => L +Int 1 </loc>
 
-    rule <k> local(FuncId:Id, I:Id : number = V1:Int - V2:Int) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : number = V1:Int - V2:Int) => Skip ... </k>
         <thread>
             ...
             <id> FuncId </id>
@@ -694,7 +683,7 @@ module TYPESCRIPT-SYNTAX
         <store> SMap:Map => SMap L |-> (V1 /Int V2) </store>
         <loc> L => L +Int 1 </loc>
 
-    rule <k> local(FuncId:Id, I:Id : number = V1:Int / V2:Int) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : number = V1:Int / V2:Int) => Skip ... </k>
         <thread>
             ...
             <id> FuncId </id>
@@ -725,7 +714,7 @@ module TYPESCRIPT-SYNTAX
         <store> SMap:Map => SMap L |-> (V1 +String V2) </store>
         <loc> L => L +Int 1 </loc>
 
-    rule <k> local(FuncId:Id, I:Id : string = V1:String + V2:String) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : string = V1:String + V2:String) => Skip ... </k>
         <thread>
             ...
             <id> FuncId </id>
@@ -746,7 +735,7 @@ module TYPESCRIPT-SYNTAX
 
     // --------------- inicializando variáveis no escopo local - String
 
-    rule <k> local(FuncId:Id, I:Id : string ) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : string ) => Skip ... </k>
         <thread>
             ...
             <id>FuncId</id>
@@ -768,7 +757,7 @@ module TYPESCRIPT-SYNTAX
 
     // ----------------- inicializando variáveis no escopo local - Number
 
-    rule <k> local(FuncId:Id, I:Id : number ) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : number ) => Skip ... </k>
         <thread>
             ...
             <id>FuncId</id>
@@ -790,7 +779,7 @@ module TYPESCRIPT-SYNTAX
 
      // ------------------ inicializando variáveis no escopo local - Boolean
 
-    rule <k> local(FuncId:Id, I:Id : boolean ) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : boolean ) => Skip ... </k>
         <thread>
             ...
             <id>FuncId</id>
@@ -812,7 +801,7 @@ module TYPESCRIPT-SYNTAX
 
     // COLOCANDO O VALOR INT NAS VARIÁVEIS (LOCAL) -----------------------------------
 
-    rule <k> local(FuncId:Id, I:Id : number = V:Int ) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : number = V:Int ) => Skip ... </k>
         <thread>
             ...
             <id> FuncId </id>
@@ -833,7 +822,7 @@ module TYPESCRIPT-SYNTAX
 
     // COLOCANDO O VALOR STRING NAS VARIÁVEIS (LOCAL)--------------------- 
 
-    rule <k> local(FuncId:Id, I:Id : string = V:String ) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : string = V:String ) => Skip ... </k>
         <thread>
             ...
             <id> FuncId </id>
@@ -864,7 +853,7 @@ module TYPESCRIPT-SYNTAX
     
     // COLOCANDO O VALOR BOOLEAN NAS VARIÁVEIS (LOCAL)--------------------- 
 
-    rule <k> local(FuncId:Id, I:Id : boolean = V:Bool ) => Skip ... </k>
+    rule <k> local(FuncId:Id, var I:Id : boolean = V:Bool ) => Skip ... </k>
         <thread>
             ...
             <id> FuncId </id>
@@ -945,7 +934,7 @@ module TYPESCRIPT-SYNTAX
 
 
 
-    rule <k> local(FuncId:Id, I:Id : number = I1:Id + I2:Id ) => local(FuncId, I : number = V + I2) ... </k> 
+    rule <k> local(FuncId:Id, var I:Id : number = I1:Id + I2:Id ) => local(FuncId, var I : number = V + I2) ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -957,7 +946,7 @@ module TYPESCRIPT-SYNTAX
         </store>  
 
 
-     rule <k> local(FuncId:Id, I:Id : number = I1:Int + I2:Id ) => local(FuncId, I : number = I1 + V) ... </k> 
+     rule <k> local(FuncId:Id, var I:Id : number = I1:Int + I2:Id ) => local(FuncId, var I : number = I1 + V) ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1019,7 +1008,7 @@ module TYPESCRIPT-SYNTAX
 
 
 
-    rule <k> local(FuncId:Id, I:Id : number = I1:Id - I2:Id ) => local(FuncId, I : number = V - I2) ... </k> 
+    rule <k> local(FuncId:Id, var I:Id : number = I1:Id - I2:Id ) => local(FuncId, var I : number = V - I2) ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1031,7 +1020,7 @@ module TYPESCRIPT-SYNTAX
         </store>  
 
 
-     rule <k> local(FuncId:Id, I:Id : number = I1:Int - I2:Id ) => local(FuncId, I : number = I1 - V) ... </k> 
+     rule <k> local(FuncId:Id, var I:Id : number = I1:Int - I2:Id ) => local(FuncId, var I : number = I1 - V) ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1094,7 +1083,7 @@ module TYPESCRIPT-SYNTAX
 
 
 
-    rule <k> local(FuncId:Id, I:Id : number = I1:Id * I2:Id ) => local(FuncId, I : number = V * I2) ... </k> 
+    rule <k> local(FuncId:Id, var I:Id : number = I1:Id * I2:Id ) => local(FuncId, var I : number = V * I2) ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1106,7 +1095,7 @@ module TYPESCRIPT-SYNTAX
         </store>  
 
 
-     rule <k> local(FuncId:Id, I:Id : number = I1:Int * I2:Id ) => local(FuncId, I : number = I1 * V) ... </k> 
+     rule <k> local(FuncId:Id, var I:Id : number = I1:Int * I2:Id ) => local(FuncId, var I : number = I1 * V) ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1169,7 +1158,7 @@ module TYPESCRIPT-SYNTAX
 
 
 
-    rule <k> local(FuncId:Id, I:Id : number = I1:Id / I2:Id ) => local(FuncId, I : number = V / I2) ... </k> 
+    rule <k> local(FuncId:Id, var I:Id : number = I1:Id / I2:Id ) => local(FuncId, var I : number = V / I2) ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1181,7 +1170,7 @@ module TYPESCRIPT-SYNTAX
         </store>  
 
 
-     rule <k> local(FuncId:Id, I:Id : number = I1:Int / I2:Id ) => local(FuncId, I : number = I1 / V) ... </k> 
+     rule <k> local(FuncId:Id, var I:Id : number = I1:Int / I2:Id ) => local(FuncId, var I : number = I1 / V) ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1196,7 +1185,7 @@ module TYPESCRIPT-SYNTAX
 
     
     // REGRA CONCATENAR IDS - STRING (LOCAL) 
-    rule <k> local(FuncId:Id, I:Id : string = I1:Id + I2:Id ) => local(FuncId, I : string = V + I2) ... </k> 
+    rule <k> local(FuncId:Id, var I:Id : string = I1:Id + I2:Id ) => local(FuncId, var I : string = V + I2) ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1208,7 +1197,7 @@ module TYPESCRIPT-SYNTAX
         </store>  
 
 
-     rule <k> local(FuncId:Id, I:Id : string = I1:String + I2:Id ) => local(FuncId, I : string = I1 + V) ... </k> 
+     rule <k> local(FuncId:Id, var I:Id : string = I1:String + I2:Id ) => local(FuncId, var I : string = I1 + V) ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1294,12 +1283,6 @@ module TYPESCRIPT-SYNTAX
     rule <k> console.log(I:Id) => console.log(V:TypesVal) ... </k>
         <env> ... I |-> L ... </env>
         <store> ... L |-> V ... </store>
-
-
-
-
-
-
 
 
     configuration <T>
