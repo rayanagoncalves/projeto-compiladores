@@ -24,11 +24,11 @@ module TYPESCRIPT-SYNTAX
                 | Print
                 | Return
 
-
     // SINTAXES PARA FUNÇÕES //
     syntax TypesVal ::= Int | String | Bool
     syntax Params ::= List{Id, ","} 
     syntax FuncDec ::= "function" Id "(" Params ")" "{" Stmt "}"
+                    | Id "(" Params ")" "{" Stmt "}"
     syntax Values ::= List{TypesVal, ","}
     syntax FuncCall ::= Id "(" Values ")"
     syntax Local ::= "local" "(" Id "," Stmt ")" 
@@ -37,6 +37,7 @@ module TYPESCRIPT-SYNTAX
 
     // PRINT //
     syntax Print ::= "console.log" "(" TypesVal ")" 
+                   | "console.log" "(" Id ")" 
 
     syntax AExp ::= Int 
                 > left: AExp "/" AExp [seqstrict, left]
@@ -67,12 +68,11 @@ module TYPESCRIPT-SYNTAX
 
     syntax DecVar ::= Id ":" Type
                     | "var" Id
-                    
- //   syntax DecIds ::= "var" Ids
 
     syntax Type ::= "number" 
                   | "boolean" 
                   | "string"
+                  | Type "[" "]"
                 
     syntax Assigner ::= DecVar "=" ConcatOrSum 
                         | Id "=" AExp [strict(2)]
@@ -82,18 +82,19 @@ module TYPESCRIPT-SYNTAX
                         | Id "=" SExp [strict(2)]
                         | DecVar "=" SExp [strict(2)]
                         | Id "=" ConcatOrSum 
+                        | DecVar "=" Array
+                        | Id "=" Array
 
     syntax ElseIfStmt ::= "else if" "(" BExp ")" "{" Block "}"
                         | "else" "{" Block "}"
                         | "else if" "(" BExp ")" "{" Block "}" ElseIfStmt
-
-//    syntax ListValues ::= List{Int, ","}
     
     // ARRAY
     syntax ListValues ::= List{TypesVal, ","}
     syntax Array ::= "[" ListValues "]"
     syntax Ids ::= List{Id, ","}
-    syntax Foreach ::= "foreach" "(" Id "in" Array ")"  "{" Stmt "}"
+    syntax Foreach ::= "for" "(" "var" Id "in" Array ")"  "{" Stmt "}"
+                    |  "for" "(" "var" Id "in" Id ")"  "{" Stmt "}"
 
     // skip
     syntax Skip ::= "Skip"
@@ -146,15 +147,11 @@ module TYPESCRIPT-SYNTAX
     rule for (D:DecVar = V:AExp ; B:BExp ; Amod:AExpMod ) {S} 
         => D = V ~> while (B) { S Amod } [structural]
 
-  //  rule .Ids : T:Type => Skip  
-   // rule .Ids : T:Type = _:Int => Skip 
-
     rule S1:Stmt S2:Stmt => S1 ~> S2 [structural]
     rule local(I:Id, S1:Stmt S2:Stmt) => local(I, S1) ~> local(I, S2) [structural]
 
     // CONCATENAÇÃO DE STRING
     rule S1:String + S2:String => S1 +String S2
-    
 
     // PEGANDO VALOR DA VARIÁVEL
     rule <k> I:Id => V ... </k>
@@ -390,54 +387,56 @@ module TYPESCRIPT-SYNTAX
                 L2 |-> V2:Int ... 
         </store>  
 
-
-
         // ----------- REGRAS FOREACH ---------
 
-     /*  rule <k>
-                foreach (I:Id in [ (V:Int, Vs:ListValues) ] ) { S:Stmt }
-                => S ~> foreach (I in [ Vs:ListValues ] ) { S }
-                ...
-            </k>
-            <env> MEnv:Map => MEnv I |-> L </env>
-            <store> MStore:Map => MStore L |-> V </store>
-            <loc> L:Int => L +Int 1 </loc>
-            when notBool (I in keys(MEnv))
-
         rule <k>
-                foreach (I:Id in [ (V:Int, Vs:ListValues) ] ) { S:Stmt }
-                => S ~> foreach (I in [ Vs:ListValues ] ) { S }
+                for ( var I:Id in [ (V:Int, Vs:ListValues) ] ) { S:Stmt }
+                => S ~> for (var I in [ Vs ] ) { S }
                 ...
             </k>
             <env> ... I |-> L ... </env>
-            <store> ... L |-> (_ => V) ... </store>
+            <store> ... L |-> (_ => V) ... </store>   
 
-        rule foreach (I:Id in [ .ListValues ] ) { S:Stmt } => Skip */
-
-        // ---------- REGRAS ARRAYLIST ------------
-
-    /*    rule <k>var I:Id => Skip ... </k>
-        <env> MEnv:Map => MEnv I |-> L </env>
-        <store> MStore:Map => MStore L |-> 0 </store>
-        <loc> L:Int => L +Int 1 </loc>
-                    
-        rule <k> var (I:Id, Xs:Ids) => var Xs ... </k>
-            <env> MEnv:Map => MEnv I |-> L </env>
-            <store> MStore:Map => MStore L |-> 0 </store>
-            <loc> L:Int => L +Int 1 </loc>
-
-        rule <k>var (I:Id, Xs:Ids) = V:Int => var Xs = V ... </k>
+        rule <k>
+                for (var I:Id in [ (V:Int, Vs:ListValues) ] ) { S:Stmt }
+                => S ~> for (var I in [ Vs ] ) { S }
+                ...
+            </k>
             <env> MEnv:Map => MEnv I |-> L </env>
             <store> MStore:Map => MStore L |-> V </store>
             <loc> L:Int => L +Int 1 </loc>
+            when notBool (I in keys(MEnv)) 
 
-        rule var .Ids => Skip  
-        rule var .Ids = _:Int => Skip  */
+        rule for (var I:Id in [ .ListValues ] ) { S:Stmt } => Skip 
+
+        // ------------FOREACH COM O ID DO ARRAY------------
+
+        rule <k>
+                for ( var I:Id in I2:Id ) { S:Stmt }
+                => for ( var I:Id in V:Array ) { S:Stmt }
+                ...
+            </k>
+            <env> ... I2 |-> L ... </env>
+            <store> ... L |-> V ... </store>  
 
 
+        // ----------REGRAS ARRAY------------
+                    
+        rule <k> var I:Id = A:Array => Skip ... </k>
+            <env> MEnv:Map => MEnv I |-> L </env>
+            <store> MStore:Map => MStore L |-> A </store>
+            <loc> L:Int => L +Int 1 </loc>
 
+        // Array tipado
 
-    
+        rule <k> I:Id : T:Type [] = A:Array => Skip ... </k>
+            <env> MEnv:Map => MEnv I |-> L </env>
+            <store> MStore:Map => MStore L |-> A </store>
+            <loc> L:Int => L +Int 1 </loc>
+
+        rule <k> I:Id = A:Array => Skip ... </k>
+            <env> ... I |-> L ... </env>
+            <store> ... L |-> (_ => A) ... </store>
 
       // REGRA SOMAR IDS IGUAIS - INT (GLOBAL) 
     rule <k> var I:Id = I1:Id + I2:Id => var I = V + I2 ... </k> 
@@ -488,7 +487,6 @@ module TYPESCRIPT-SYNTAX
             ... L |-> V:Int ... 
         </store>  
 
-
   // REGRA CONCATENAR IDS IGUAIS - STRING (GLOBAL) 
     rule <k> var I:Id = I1:Id + I2:Id => var I = V + I2 ... </k> 
             <env> ... I1 |-> L ... </env>
@@ -538,12 +536,19 @@ module TYPESCRIPT-SYNTAX
             ... L |-> V:String ... 
         </store>  
 
-
-
-
     // REGRAS PARA FUNÇÃO
 
     rule <k> function I:Id (P:Params) { S:Stmt } => Skip ... </k>
+        ( .Bag => <thread> 
+                <id> I </id>
+                <scope> S </scope>
+                <params> P </params>
+                <temp> P </temp>
+                <localEnv> .Map </localEnv>
+            </thread>
+        )
+
+    rule <k> I:Id (P:Params) { S:Stmt } => Skip ... </k>
         ( .Bag => <thread> 
                 <id> I </id>
                 <scope> S </scope>
@@ -617,7 +622,7 @@ module TYPESCRIPT-SYNTAX
         </thread>
         <store> ... L |-> (_ => V1 +Int V2) ... </store>
 
-        // INT - SUBTRAÇÃO  ------------------------------------- AINDA TESTAR
+        // INT - SUBTRAÇÃO  ------------------------------------- 
     rule <k> local(FuncId:Id, var I:Id = V1:Int - V2:Int) => Skip ... </k>
         <thread>
             ...
@@ -647,7 +652,7 @@ module TYPESCRIPT-SYNTAX
         </thread>
         <store> ... L |-> (_ => V1 -Int V2) ... </store>
 
-    // INT - MULTIPLICAÇÃO ------------------------------------- AINDA TESTAR
+    // INT - MULTIPLICAÇÃO ------------------------------------- 
     rule <k> local(FuncId:Id, var I:Id = V1:Int * V2:Int) => Skip ... </k>
         <thread>
             ...
@@ -678,7 +683,7 @@ module TYPESCRIPT-SYNTAX
         <store> ... L |-> (_ => V1:Int *Int V2:Int) ... </store>
 
 
-    // INT - DIVISÃO ------------------------------------- AINDA TESTAR
+    // INT - DIVISÃO ------------------------------------- 
     rule <k> local(FuncId:Id, var I:Id = V1:Int / V2:Int) => Skip ... </k>
         <thread>
             ...
@@ -807,7 +812,6 @@ module TYPESCRIPT-SYNTAX
 
     // COLOCANDO O VALOR INT NAS VARIÁVEIS (LOCAL) -----------------------------------
 
-
     rule <k> local(FuncId:Id, I:Id : number = V:Int ) => Skip ... </k>
         <thread>
             ...
@@ -827,10 +831,7 @@ module TYPESCRIPT-SYNTAX
         </thread>
         <store> ... L |-> (_ => V:Int) ... </store>
 
-        
-
     // COLOCANDO O VALOR STRING NAS VARIÁVEIS (LOCAL)--------------------- 
-
 
     rule <k> local(FuncId:Id, I:Id : string = V:String ) => Skip ... </k>
         <thread>
@@ -860,7 +861,6 @@ module TYPESCRIPT-SYNTAX
         </thread>
         <store> SMap:Map => SMap L |-> V </store>
         <loc> L => L +Int 1 </loc>
-
     
     // COLOCANDO O VALOR BOOLEAN NAS VARIÁVEIS (LOCAL)--------------------- 
 
@@ -893,10 +893,6 @@ module TYPESCRIPT-SYNTAX
         </thread>
         <store> SMap:Map => SMap L |-> V </store>
         <loc> L => L +Int 1 </loc>
-
-
-
-//  local ( teste , var y = x + x )
 
     // REGRA SOMAR IDS - INT (LOCAL) 
     rule <k> local(FuncId:Id, var I:Id = I1:Id + I2:Id ) => local(FuncId, var I = V + I2) ... </k> 
@@ -1273,11 +1269,9 @@ module TYPESCRIPT-SYNTAX
             ... L |-> V:String ... 
         </store> 
 
-
-
     // retorno da função 
 
-    rule <k> local(FuncId:Id, return I:Id ) => V ... </k> 
+    rule <k> local(FuncId:Id, return I:Id ) ~> local(_ , _) => V ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1286,22 +1280,20 @@ module TYPESCRIPT-SYNTAX
         </thread>
         <store> ... L |-> V ... </store>
 
-    rule <k> local(FuncId:Id, return T:TypesVal ) => T ... </k> 
+    rule <k> local(FuncId:Id, return T:TypesVal ) ~> local(_ , _) => T ... </k> 
         <thread>
             ...
             <id> FuncId </id>
             ...
         </thread>
 
-  //  rule local(I:Id, Return:R S2:Stmt) => local(I, R) ~> Skip [structural]
-      
-
-
-
     // print
-    rule <k> console.log(T:TypesVal) => Skip </k>
+    rule <k> console.log(T:TypesVal) => Skip ... </k>
         <out> PSet:Set => PSet SetItem(T) </out>
 
+    rule <k> console.log(I:Id) => console.log(V:TypesVal) ... </k>
+        <env> ... I |-> L ... </env>
+        <store> ... L |-> V ... </store>
 
 
 
