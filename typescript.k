@@ -231,7 +231,7 @@ module TYPESCRIPT-SYNTAX
         <store> ... L |-> (_ => V) ... </store>
 
     // REGRA SOMAR IDS DIFERENTES - String  
-    rule <k> var I:Id = I1:Id + I2:Id => var I = V1 + V2 ... </k> 
+ /*    rule <k> var I:Id = I1:Id + I2:Id => var I = V1 + V2 ... </k> 
         <env> 
             ... I1 |-> L1
                 I2 |-> L2 ...
@@ -384,7 +384,7 @@ module TYPESCRIPT-SYNTAX
         <store> 
             ... L1 |-> V1:Int  
                 L2 |-> V2:Int ... 
-        </store>  
+        </store>  */
 
         // ----------- REGRAS FOREACH ---------
 
@@ -426,7 +426,7 @@ module TYPESCRIPT-SYNTAX
             <store> MStore:Map => MStore L |-> A </store>
             <loc> L:Int => L +Int 1 </loc>
 
-        // Array tipado
+        // ARRAY TIPADO
 
         rule <k> var I:Id : T:Type [] = A:Array => Skip ... </k>
             <env> MEnv:Map => MEnv I |-> L </env>
@@ -437,7 +437,7 @@ module TYPESCRIPT-SYNTAX
             <env> ... I |-> L ... </env>
             <store> ... L |-> (_ => A) ... </store>
 
-      // REGRA SOMAR IDS IGUAIS - INT (GLOBAL) 
+      // REGRA SOMAR IDS - INT (GLOBAL) 
     rule <k> var I:Id = I1:Id + I2:Id => var I = V + I2 ... </k> 
             <env> ... I1 |-> L ... </env>
         <store> 
@@ -486,7 +486,7 @@ module TYPESCRIPT-SYNTAX
             ... L |-> V:Int ... 
         </store>  
 
-  // REGRA CONCATENAR IDS IGUAIS - STRING (GLOBAL) 
+  // REGRA CONCATENAR IDS - STRING (GLOBAL) 
     rule <k> var I:Id = I1:Id + I2:Id => var I = V + I2 ... </k> 
             <env> ... I1 |-> L ... </env>
         <store> 
@@ -957,7 +957,7 @@ module TYPESCRIPT-SYNTAX
             ... L |-> V:Int ... 
         </store> 
 
-    // REGRA SUBTRAIR IDS - INT (LOCAL)   ----------------------------------- AINDA TESTAR
+    // REGRA SUBTRAIR IDS - INT (LOCAL)   
     rule <k> local(FuncId:Id, var I:Id = I1:Id - I2:Id ) => local(FuncId, var I = V - I2) ... </k> 
         <thread>
             ...
@@ -1032,7 +1032,7 @@ module TYPESCRIPT-SYNTAX
         </store>
 
 
-// REGRA MULTIPLICAR IDS - INT (LOCAL)  ----------------------------------- AINDA TESTAR
+// REGRA MULTIPLICAR IDS - INT (LOCAL)  
     rule <k> local(FuncId:Id, var I:Id = I1:Id * I2:Id ) => local(FuncId, var I = V * I2) ... </k> 
         <thread>
             ...
@@ -1107,7 +1107,7 @@ module TYPESCRIPT-SYNTAX
         </store>
 
 
-// REGRA DIVISAO IDS - INT (LOCAL)  ----------------------------------- AINDA TESTAR
+// REGRA DIVISAO IDS - INT (LOCAL)  
     rule <k> local(FuncId:Id, var I:Id = I1:Id / I2:Id ) => local(FuncId, var I = V / I2) ... </k> 
         <thread>
             ...
@@ -1258,7 +1258,7 @@ module TYPESCRIPT-SYNTAX
             ... L |-> V:String ... 
         </store> 
 
-    // retorno da função 
+    // REGRAS RETORNO DA FUNÇÃO
 
     rule <k> local(FuncId:Id, return I:Id ) ~> local(_ , _) => V ... </k> 
         <thread>
@@ -1276,7 +1276,7 @@ module TYPESCRIPT-SYNTAX
             ...
         </thread>
 
-    // print
+    // REGRA PRINT
     rule <k> console.log(T:TypesVal) => Skip ... </k>
         <out> PSet:Set => PSet SetItem(T) </out>
 
@@ -1284,11 +1284,24 @@ module TYPESCRIPT-SYNTAX
         <env> ... I |-> L ... </env>
         <store> ... L |-> V ... </store>
 
+    // REGRA PRINT NO ESCOPO LOCAL
+    rule <k>local(FuncId:Id, console.log(T:TypesVal)) => Skip... </k>
+         <out> PSet:Set => PSet SetItem(T) </out>
+
+    rule <k> local(FuncId:Id, console.log(I:Id)) => local(FuncId:Id, console.log(V:TypesVal)) ... </k>
+        <thread>
+            ...
+            <id> FuncId </id>
+            <localEnv> ... I |-> L ... </localEnv>
+            ...
+        </thread>
+        <store> ... L |-> V ... </store>
+
 
     configuration <T>
         <k> $PGM:Block </k>
         <functions color="red"> 
-            <thread multiplicity="*" color="orange" type="Map"> 
+            <thread multiplicity="*" color="blue" type="Map"> 
                 <id> .K </id>
                 <scope> .K </scope>
                 <params> .K </params>
