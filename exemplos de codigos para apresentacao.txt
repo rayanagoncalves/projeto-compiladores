@@ -85,7 +85,9 @@ for (var item in x) {
 function soma(a, b) {
 
 var resultado = a + b
-console.log(resultado)
+return resultado
+
+console.log("teste pós-return")
 }
 
 // chamada da funcao

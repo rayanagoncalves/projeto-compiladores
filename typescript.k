@@ -1261,7 +1261,7 @@ module TYPESCRIPT-SYNTAX
     // REGRAS RETORNO DA FUNÇÃO
 
     // com um statement apos o return
-    rule <k> local(FuncId:Id, return I:Id _) ~> local(_ , _) => return V:TypesVal ... </k> 
+    rule <k> local(FuncId:Id, return I:Id) ~> local(_ , _) => V ... </k> 
         <thread>
             ...
             <id> FuncId </id>
@@ -1270,35 +1270,15 @@ module TYPESCRIPT-SYNTAX
         </thread>
         <store> ... L |-> V ... </store>
 
-    rule <k> local(FuncId:Id, return T:TypesVal _) ~> local(_ , _) => return T:TypesVal ... </k> 
+    rule <k> local(FuncId:Id, return T:TypesVal) ~> local(_ , _) => T ... </k> 
         <thread>
             ...
             <id> FuncId </id>
             ...
         </thread>
-
-    // sem statement após return -- testar
-     rule <k> local(FuncId:Id, return T:TypesVal) ~> Skip => return T:TypesVal ... </k> 
-        <thread>
-            ...
-            <id> FuncId </id>
-            ...
-        </thread>
-
-    rule <k> local(FuncId:Id, return I:Id) ~> Skip => return V:TypesVal ... </k> 
-        <thread>
-            ...
-            <id> FuncId </id>
-            <localEnv> ... I |-> L ... </localEnv>
-            ...
-        </thread>
-        <store> ... L |-> V ... </store>
 
     // fora do escopo local
     rule return T:TypesVal => T
-
-
-
 
     // REGRA PRINT
     rule <k> console.log(T:TypesVal) => Skip ... </k>
